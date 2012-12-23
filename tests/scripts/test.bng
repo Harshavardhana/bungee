@@ -1,37 +1,34 @@
 # this is comment
-
-BEGIN:
-  print("Hello BEGIN1")
-  print("Hello BEGIN2") # this is comment
-
-INPUT:#this is also comment
-    print("Hello INPUT1")
-    print("Hello\# INPUT2")
-    $meta=File.meta()
-    print("$name=", $name, " $abcd=", $abcd)
-
 '''
 this is also comment
 '''
+
+BEGIN: #this is also comment
+   print("Hello BEGIN1")
+   print("Hello BEGIN2") # this is comment
+   $load
+
+INPUT:
+   print("Hello INPUT1")
+   print("Hello\# INPUT2")
+   $meta=File.meta()
+   print("$name=", $name, " $abcd=", $abcd)
+
 RULE CopyCheck Copyright.infringed($meta):
-  print($meta['filename'])
-
-GROUP MyGrp RULE MyRule1 True:
-  for val in $*:
-    print(val)
-
-GROUP MyGroup RULE MyRule2 True:
-  print($abcd)
+   print($meta['filename'])
+   $jump(Disney)
+   $jump(Pixar)
 
 RULE MyRule1 asf:
    print($abcd)
    print("DEBUG")
+   $jump(NameMatch->English->MyRuleX)
 
-GROUP NameMatch RULE MyRuleX $abcd=="John":
-  print($abcd)
+RULE NameMatch->English->MyRuleX $abc:
+   print($abcd)
 
 END:
    # this is test
    print("Hello END1")
-   print("Hello END2")
+   print($version())
    print("Value is", $abcd);

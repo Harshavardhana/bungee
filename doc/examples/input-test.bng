@@ -1,9 +1,9 @@
-seed = 1
 def BEGIN():
+    $seed = 1
     print("Hello Begin")
 
 def INPUT():
-    $count = seed + $count + 1
+    $count = $seed + $count + 1
     print("In the guts..", $count)
 
     if $count <= 10:

@@ -44,7 +44,7 @@ emb_bng_version (PyObject *self, PyObject *args)
   /* string after : is used as function name in error messages */
   if(!PyArg_ParseTuple(args, ":version"))
     {
-      BNG_DBG (_("Error parsing Bungee.version() tuple"));
+      BNG_DBG (_("Error parsing bungee.version() tuple"));
       Py_RETURN_NONE;
     }
   return PyUnicode_FromString (VERSION);
@@ -58,7 +58,7 @@ emb_bng_version (PyObject *self, PyObject *args)
 static PyObject* PyInit_bungee(void);
 
 static PyModuleDef BungeeModule = {
-  PyModuleDef_HEAD_INIT, "Bungee", NULL, -1, BungeeMethods,
+  PyModuleDef_HEAD_INIT, "bungee", NULL, -1, BungeeMethods,
   NULL, NULL, NULL, NULL
 };
 
@@ -85,9 +85,9 @@ import_mod_bungee (void)
     }
 
   /* Make our "bungee" module available to Python's main to import */
-  PyObject *_module_str = PyUnicode_FromString ("Bungee");
+  PyObject *_module_str = PyUnicode_FromString ("bungee");
   _mod_bungee = PyImport_Import (_module_str);
-  PyObject_SetAttrString (_mod_main, "Bungee", _mod_bungee);
+  PyObject_SetAttrString (_mod_main, "bungee", _mod_bungee);
   Py_DECREF (_module_str);
 
   return (_mod_bungee);
@@ -98,7 +98,7 @@ import_mod_bungee (void)
 gint
 mod_bungee_register (void)
 {
-  if (PyImport_AppendInittab ("Bungee", &PyInit_bungee) == -1)
+  if (PyImport_AppendInittab ("bungee", &PyInit_bungee) == -1)
     return (-1);
   else
     return (0); /* Python return values are not consistent. Some functions return 1 for success. */
@@ -110,7 +110,7 @@ mod_bungee_init ()
   mod_bungee = import_mod_bungee ();
   if (mod_bungee == NULL)
     {
-      BNG_DBG (_("Unable to import Bungee module."));
+      BNG_DBG (_("Unable to import bungee module."));
       return (-1);
     }
 

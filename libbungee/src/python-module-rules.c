@@ -117,7 +117,7 @@ void rule_destroy (void *rule)
 /* >>>> Insert new primitives here <<<< */
 /****************************************/
 /*
-  # Rules.append('groupname', 'rulename', '''condition()''', 'action()'))
+  # rules.append('groupname', 'rulename', '''condition()''', 'action()'))
 
   rules.append primitive appends a new rule to the rule table. It uses event
   driven programming model, where condition determines the action.
@@ -147,7 +147,7 @@ emb_append_rule (PyObject *self, PyObject *args)
 			&PyFunction_Type, &rule.condt,
 			&PyFunction_Type, &rule.action))
     {
-      BNG_DBG (_("Error parsing Rules.append(...) rule."));
+      BNG_DBG (_("Error parsing rules.append(...) rule."));
     }
 
 /* Let PyArg_ParseTuple do the validation via O!. */
@@ -190,7 +190,7 @@ emb_append_rule (PyObject *self, PyObject *args)
 static PyObject* PyInit_rules (void);
 
 static PyModuleDef RulesModule = {
-  PyModuleDef_HEAD_INIT, "Rules", NULL, -1, RulesMethods,
+  PyModuleDef_HEAD_INIT, "rules", NULL, -1, RulesMethods,
   NULL, NULL, NULL, NULL
 };
 
@@ -217,9 +217,9 @@ import_mod_rules (void)
     }
 
   /* Make our "rules" module available to Python's main to import */
-  PyObject *_module_str = PyUnicode_FromString ("Rules");
+  PyObject *_module_str = PyUnicode_FromString ("rules");
   _mod_rules = PyImport_Import (_module_str);
-  PyObject_SetAttrString (_mod_main, "Rules", _mod_rules);
+  PyObject_SetAttrString (_mod_main, "rules", _mod_rules);
   Py_DECREF (_module_str);
 
   return (_mod_rules);
@@ -229,7 +229,7 @@ import_mod_rules (void)
 gint
 mod_rules_register (void)
 {
-  if (PyImport_AppendInittab ("Rules", &PyInit_rules) == -1)
+  if (PyImport_AppendInittab ("rules", &PyInit_rules) == -1)
     return (-1);
   else
     return (0); /* Python return values are not consistent. Some functions return 1 for success. */

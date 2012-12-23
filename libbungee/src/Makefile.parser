@@ -12,7 +12,10 @@ parser.tab.c: parser.y
 parser: parser.tab.c lex.yy.c
 	-gcc -g -O0 -fno-inline -Wall -D_DEBUG_PARSER -D_GNU_SOURCE -o parser parser.tab.c lex.yy.c
 clean:
-	-rm -f parser lex.yy.c parser.tab.c parser.tab.h scanner.h lex.yy.o parser.output
+	-rm -f parser lex.yy.c scanner.c scanner.h parser.tab.c parser.tab.h lex.yy.o parser.output
 
-run: parser
-	-./parser < ../../tests/scripts/test.bng
+run: clean parser
+	-echo -n "Press ENTER key to run"
+	-read
+	-ulimit -c unlimited
+	-./parser ../../tests/scripts/test.bng

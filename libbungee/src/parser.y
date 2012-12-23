@@ -32,9 +32,9 @@
 
 /** Terminal symbols **/
 /* Terminal symbols with no value */
-%token TBEGIN TINPUT TEND TRULE TGROUP TEOF
+%token TBEGIN TINPUT TEND TEOF
 /* Terminal symbols with string value */
-%token <string> TGROUP_NAME TRULE_NAME TRULE_CONDT
+%token <string> TCONDITION TACTION
 
 /*  Free heap based token values during error recovery */
 %destructor { XFREE ($$); } <string>
@@ -67,17 +67,25 @@ int bng_compile (FILE *script_fp, const char *script_name, FILE *out_fp, FILE *e
   typedef struct {
     FILE *err_fp;
     const char *script_name;
-    struct {
-      unsigned char slquote_type;
-      unsigned char mlquote_type;
-      unsigned long sl_start;
-      unsigned long ml_start;
+    union {
+      struct {
+	unsigned long start;
+	unsigned char type;
+      } multiline;
+      struct {
+	unsigned long start;
+	unsigned char type;
+      } singleline;
     } quote;
-    struct found {
+    struct {
       unsigned char begin;
       unsigned char input;
       unsigned char end;
     } found;
+    struct {
+      char *name;
+      char *condition;
+    } rule;
   } local_vars_t;
 
 /* Terminal location type */
@@ -98,7 +106,8 @@ typedef struct YYLTYPE {
 /* Flex generates all the header definitions for us. */
 #include "scanner.h"
 
-extern int yyerror (yyscan_t yyscanner, const char *format, ...) __attribute__ ((format (gnu_printf, 2, 3)));
+extern int  yyerror (YYLTYPE *yylloc, yyscan_t yyscanner, char const *format, ...) __attribute__ ((format (gnu_printf, 3, 4)));
+
 }
 
 /* Grammar Rules */
@@ -118,54 +127,36 @@ TINPUT
   fprintf (yyget_out (yyscanner), "def INPUT():");
 }
 
-rule: TRULE TRULE_NAME TRULE_CONDT
+rule: condition action
+
+condition: TCONDITION
 {
-  if ($2 == NULL)
+  if ($1 == NULL)
     {
-      yyerror (yyscanner, "RULE has no name.\n");
+      // YYERROR ("RULE has no name.\n");
       YYABORT;
     }
 
-  if ($3 == NULL)
-    fprintf (yyget_out (yyscanner), "Rules.append('_global', '%s', lambda: True, '_ation_%s')\n", $2, $2);
-  else
-    fprintf (yyget_out (yyscanner), "Rules.append('_global', '%s', lambda: %s, '_action_%s')\n", $2, $3, $2);
-
-  fprintf (yyget_out (yyscanner), "def _action_%s():", $2);
-
-  XFREE ($2);
-  XFREE ($3);
+  fprintf (yyget_out (yyscanner), "def _CONDITION_%s()\n    return ", $1);
+  XFREE ($1);
 }
-| TGROUP TGROUP_NAME TRULE TRULE_NAME TRULE_CONDT
+
+action: TACTION
 {
-  if ($2 == NULL)
+  if ($1 == NULL)
     {
-      yyerror (yyscanner, "GROUP has no name.\n");
+      //      YYERROR ("RULE has no name.\n");
       YYABORT;
     }
 
-  if (strncmp ($2, "RULE", 4) == 0)
-    {
-      yyerror (yyscanner, "GROUP has no name.\n");
-      YYABORT;
-    }
-
-  if ($4 == NULL)
-    {
-      yyerror (yyscanner, "RULE has no name.\n");
-      YYABORT;
-    }
-
-  if ($5 == NULL)
-    fprintf (yyget_out (yyscanner), "Rules.append('%s', '%s', '''lambda: True''', '_action_%s')\n", $2, $4, $4);
-  else
-    fprintf (yyget_out (yyscanner), "Rules.append('%s', '%s', '''lambda: %s''', '_action_%s')\n", $2, $4, $5, $4);
-
-  fprintf (yyget_out (yyscanner), "def _action_%s():", $4);
-
-  XFREE ($2);
-  XFREE ($4);
-  XFREE ($5);
+  fprintf (yyget_out (yyscanner), "\ndef _ACTION_%s()", $1);
+  /* Now we have both the corresponding condition and action functions
+     given a rule name. */
+  /* fprintf (yyget_out (yyscanner),
+	   "Rules.append('%s', _ACTION_%s, _CONDITION_%s)\n",
+	   $1, $1, $1);
+  */
+  XFREE ($1);
 }
 
 endcb:
@@ -187,8 +178,8 @@ bng_compile (FILE *script_fp, const char *script_name, FILE *out_fp, FILE *err_f
   yyscan_t yyscanner; /* Re-entrant praser stores its state here. */
   local_vars_t locals;
 
-  locals.quote.slquote_type = locals.quote.mlquote_type='\0';
-  locals.quote.sl_start = locals.quote.ml_start = 0;
+  locals.quote.singleline.type = locals.quote.multiline.type='\0';
+  locals.quote.singleline.start = locals.quote.multiline.start = 0;
   locals.found.begin = locals.found.input = locals.found.end = 0;
   locals.err_fp = stderr;
   locals.script_name = script_name; /* Used by yyerror to relate error messages to script. */
@@ -218,10 +209,11 @@ bng_compile (FILE *script_fp, const char *script_name, FILE *out_fp, FILE *err_f
 
 #ifdef _DEBUG_PARSER
 int
-main (void)
+main (int argc, char *argv[])
 {
+  FILE *fp = fopen (argv[1], "r");
   //return  bng_compile (NULL, NULL, NULL, NULL);
-  return bng_compile (stdin, NULL, stdout, stderr);
+  return bng_compile (fp, argv[1], stdout, stderr);
 }
 
 #endif

@@ -26,13 +26,13 @@ limitations under the License.
 #include "logger.h"
 
 /* hold a reference GLOBALS dictionary. All $variables will be stored in this dictionary. */
-static PyObject *_globals;
+static PyObject *bng_globals;
 
 gint
 bungee_globals_init ()
 {
-  _globals = PyDict_New ();
-  if ((_globals == NULL) || !(PyDict_CheckExact (_globals)))
+  bng_globals = PyDict_New ();
+  if ((bng_globals == NULL) || !(PyDict_CheckExact (bng_globals)))
     return (-1);
 
   PyObject *mod_bungee; /* __main__ module */
@@ -45,8 +45,8 @@ bungee_globals_init ()
       return (1);
     }
 
-  /* Make our "_globals" dictionary available through BUNGEE module. */
-  PyObject_SetAttrString (mod_bungee, "_globals", _globals);
+  /* Make our "globals" dictionary available through Bungee module. */
+  PyObject_SetAttrString (mod_bungee, "globals", bng_globals);
 
   return (0);
 }
@@ -54,6 +54,6 @@ bungee_globals_init ()
 gint
 bungee_globals_fini ()
 {
-  Py_DECREF (_globals);
+  Py_DECREF (bng_globals);
   return (0);
 }

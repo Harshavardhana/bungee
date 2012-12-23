@@ -1,1 +1,1 @@
-print("Bungee version [", Bungee.version(), "]", sep="")
+print("Bungee version [", bungee.version(), "]", sep="")
